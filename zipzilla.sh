@@ -75,15 +75,55 @@ detect_os(){
         Linux*)
             # Detect Linux distro
             if command -v apt-get &>/dev/null; then
-                sudo apt-get install -y "${missing_tools[@]}"
-                elif command -v pacman &>/dev/null; then
-                sudo pacman -Sy --noconfirm "${missing_tools[@]}"
-                elif command -v dnf &>/dev/null; then
-                sudo dnf install -y "${missing_tools[@]}"
-                elif command -v yum &>/dev/null; then
-                sudo yum install -y "${missing_tools[@]}"
-                elif command -v zypper &>/dev/null; then
-                sudo zypper install -y "${missing_tools[@]}"
+                for tool in "${missing_tools[@]}"; do
+                    if  command -v $tool &>/dev/null; then
+                        echo "tool is already installed in system"
+                    else 
+                        sudo apt-get install -y "${missing_tools[@]}"
+                    fi
+
+                done    
+            elif command -v pacman &>/dev/null; then
+                for tool in "${missing_tools[@]}"; do
+                     if  command -v $tool 2&>/dev/null; then
+                        echo "tool is already installed in system"
+                    else 
+                        sudo pacman -Sy --noconfirm "${missing_tools[@]}"
+                    fi
+
+                done 
+                
+            elif command -v dnf &>/dev/null; then
+                for tool in "${missing_tools[@]}"; do
+                    if command -v $tool 2&>/dev/null; then
+                        echo "tool is already installed in system"
+                    else 
+                        sudo dnf install -y "${missing_tools[@]}"
+                    fi
+
+                done 
+                
+                
+            elif command -v yum &>/dev/null; then
+                for tool in "${missing_tools[@]}"; do
+                    if command -v $tool 2&>/dev/null; then
+                        echo "tool is already installed in system"
+                    else 
+                        sudo dnf install -y "${missing_tools[@]}"
+                    fi
+
+                done 
+                
+            elif command -v zypper &>/dev/null; then
+                for tool in "${missing_tools[@]}"; do
+                    if command -v $tool 2&>/dev/null; then
+                        echo "tool is already installed in system"
+                    else 
+                        sudo zypper install -y "${missing_tools[@]}"
+                    fi
+
+                done 
+                
             else
                 echo -e "\e[91mUnsupported Linux distro or missing package manager.\e[0m"
                 exit 1
@@ -283,8 +323,32 @@ execute_operation() {
         fi
     done
 }
-
 # $1=tool $2=prefix $3=tar-type
+
+execute_video(){
+    tool=`$1`
+    flags=`$2`
+    prefix=`$3`
+
+    for f in "$file"; do
+                    
+                    if [ $output_file_extension ]; then
+                        ffmpeg -i $f -vcodec libx264 -crf $output_video_quality $output_file+$output_file_extension
+                    fi
+                    $tool $flags $f+$prefix $f
+                    # tar -cvjf filename.tar.gz filename
+                    echo
+
+                    if [[ $? -eq 0 ]]; then
+                        echo -e "\e[92m$f successfully extraced/compressed..\e[0m"
+                    else 
+                        echo -e "\e[91mError: $f is not extraced/compressed..\e[0m"
+                    fi
+    done
+}
+# tool=`$1` flags=`$2` prefix=`$3`
+
+
 echo -e "\e[92m"
 echo "Welcome to Zipzilla! Please choose an option from the menu below:"
 echo "1. Files extraction/compression"
@@ -292,7 +356,8 @@ echo "2. Folders extraction/compression"
 echo "3. Images extraction/compression"
 echo "4. Videos extraction/compression"
 echo "5. Linux/Android applications extraction/compression"
-echo "6. Exit"
+echo "6. Convert video format"
+echo "7. Exit"
 read -p "Enter your option : " select_extraction
 echo -e "\e[0m"
 case $select_extraction in
@@ -505,9 +570,167 @@ case $select_extraction in
     4)
         echo -e "\e[91mVideos extraction/compression.\e[0m"
         echo -e "\e[92m"
+        echo
+        echo -e "\e[93mOnly supports .mp4, .mkv, .mpeg \e[0m"
+        echo
         echo "Please choose an option from the menu below:" 
-    ;;
+        echo "1. zip $file"
+        echo "2. tar + gzip $file"
+        echo "3. tar + xz $file"
+        echo "4. unzip $file"
+        echo "5. extract *.tar.gz = $file"
+        echo "6. extract *.tar.xz = $file"
+        echo "7. extract audio from video"
+        echo "8. extract clip from video"
+        echo "9. custom compress quality" 
+        read -p "Enter your option : " choose3
+        echo -e "\e[0m"
+        
+        for oneFile in "${file}"; do
+            if [[ "$oneFile" =~ \.(mp4|mkv|avi|mov|flv|wmv|webm)$ ]]; then
+                echo "✅ $oneFile is valid"
+            else
+                echo "❌ $oneFile is not valid."
+                exit 1
+            fi
+        done
 
+        case $choose3 in
+            1)
+                missing_tools=(zip)
+                detect_os;
+                for f in "${file}"; do
+                    zip $f.zip $f
+                    # zip demo.zip demo.mp4
+                    echo 
+                    if [[ $? -eq 0 ]]; then
+                
+                        echo -e "\e[92m$f is successfully compressed.\e[0m"
+                    else 
+                        echo -e "\e[91mError$f is not compressed.\e[0m"
+                    fi
+                done
+                exit 1;
+            ;;
+            2)
+                missing_tools=(tar gzip)
+                detect_os;
+                execute_video tar -czvf .tar.gz
+                exit 1
+            ;;
+            3)
+                missing_tools=(tar xz)
+                detect_os;
+                execute_video tar -czvf .tar.xz
+                exit 1
+            ;;
+            4)
+                missing_tools=(unzip)
+                detect_os;
+                 for f in "${file}"; do
+                    unzip $f
+                    # zip demo.zip demo.mp4
+                    echo 
+                    if [[ $? -eq 0 ]]; then
+                
+                        echo -e "\e[92m$f is successfully extraced/compressed.\e[0m"
+                    else 
+                        echo -e "\e[91mError$f is not extraced/compressed.\e[0m"
+                    fi
+                done
+                exit 1
+            ;;
+            5)
+                missing_tools=(tar gzip)
+                detect_os;
+                execute_video tar -xzvf .tar.gz
+                exit 1
+            ;;
+            6)
+                missing_tools=(tar gzip)
+                detect_os;
+                execute_video tar -xJvf .tar.xz
+                exit 1
+            ;;
+            7)
+                missing_tools=(ffmpeg)
+                detect_os
+                for f in "$file"; do
+                     ffmpeg -i "$f" -q:a 0 -map a "${f%.*}.mp3"
+                      if [[ $? -eq 0 ]]; then
+                
+                        echo -e "\e[92m$f is successfully compressed.\e[0m"
+                    else 
+                        echo -e "\e[91mError$f is not compressed.\e[0m"
+                    fi
+                done
+                exit 1
+            ;;
+            8)
+                missing_tools=(ffmpeg)
+                detect_os;
+                read -p "⏱️ Start time (e.g., 00:00:10): " start
+                read -p "⏱️ Duration (e.g., 00:00:05): " duration
+                if [[ -z "$start" || -z "$duration" ]]; then
+                    echo -e "\e[91mError : Please define start & duration time.\e[0m";
+                fi
+                 for f in "$file"; do
+                       ffmpeg -ss "$start" -i "$f" -t "$duration" -c copy "${f%.*}_clip.mp4"
+                      if [[ $? -eq 0 ]]; then
+        
+                        echo -e "\e[92m$f is successfully compressed.\e[0m"
+                    else 
+                        echo -e "\e[91mError$f is not compressed.\e[0m"
+                    fi
+                done
+
+                exit 1
+            ;;
+            9)
+                  missing_tools=(ffmpeg)
+                detect_os
+                echo -e "\e[92m18–23\e[0m: Good quality \n\e[91m28–30\e[0m: More compressed, lower quality"
+                read -p "Enter video quality: " output_video_quality
+                if [[ -z "$output_video_quality" || "$output_video_quality" -lt 18 || "$output_video_quality" -gt 30 ]]; then
+                    echo "Please enter a valid number"
+                    exit 1;
+                fi
+                read -p "Enter name your output file:" output_file  
+                if [[ ! "$output_file" =~ \.(mkv|mp4|mpeg)$ ]]; then
+                    read -p "Enter your output file extension (mkv, mp4, mpeg): "  output_file_extension
+    
+                    # Ensure it starts with a dot (.)
+                    if [[ ! "$output_file_extension" =~ ^\.(mkv|mp4|mpeg)$ ]]; then
+                        output_file_extension=`$output_file_extension`;
+
+                    fi
+                fi
+                for f in "$file"; do
+                    if [ $output_file_extension ]; then
+                        ffmpeg -i $f -vcodec libx264 -crf $output_video_quality $output_file+$output_file_extension
+                    fi
+                    ffmpeg -i $f -vcodec libx264 -crf output_video_quality output_file
+
+                    if [[ $? -eq 0 ]]; then
+                        echo -e "\e[92m$f successfully compressed.\e[0m"
+                    else 
+                        echo -e "\e[91mError: $f is not compressed.\e[0m"
+                    fi
+                done
+                exit 1;; 
+            *)
+                echo -e "\e[31m"
+                echo "Invalid choice. Please try again."
+                echo -e "\e[0m"
+                exit 1;;
+            
+        esac
+
+
+
+    ;;
+    
+    
     *)
         echo -e "\e[31m"
         echo "Invalid choice. Please try again."
