@@ -90,24 +90,53 @@ detect_os(){
             fi
         ;;
         MINGW*|MSYS*|CYGWIN*|Windows_NT)
-            echo -e "\e[93m⚠️ Detected Windows environment (Git Bash/MSYS2/WSL).\e[0m"
+            echo -e "\e[93m⚠️ Detected Windows environment.\e[0m"
 
-            # Attempt MSYS2 automated installation
-            if command -v pacman &>/dev/null; then
-            echo -e "\e[94mDetected MSYS2. Installing missing tools via pacman...\e[0m"
-            pacman -Sy --noconfirm "${missing_tools[@]}"
-            elif grep -qi microsoft /proc/version 2>/dev/null; then
-            echo -e "\e[94mDetected WSL (Windows Subsystem for Linux).\e[0m"
-            echo -e "➡ Installing using apt..."
-            sudo apt-get update && sudo apt-get install -y "${missing_tools[@]}"
+            if ! command -v choco &>/dev/null; then
+            echo -e "\e[94mInstalling Chocolatey (for Windows package management)...\e[0m"
+            powershell -Command "Set-ExecutionPolicy Bypass -Scope Process -Force; \
+             [System.Net.ServicePointManager]::SecurityProtocol = 'Tls12'; \
+            iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
             else
-            echo -e "\e[91m❌ Automatic installation failed or unsupported Windows shell.\e[0m"
-            echo -e "Please install the following tools manually: ${missing_tools[*]}"
-            echo -e "💡 Tip: Use MSYS2 from https://www.msys2.org/ and run:\n  pacman -S ${missing_tools[*]}"
-            echo -e "Or use Chocolatey (https://chocolatey.org/) if available."
+            echo -e "\e[92mChocolatey already installed.\e[0m"
+            fi
+
+            echo -e "\e[94mInstalling compression tools using Chocolatey...\e[0m"
+            choco_tools=$(IFS=" "; echo "${missing_tools[*]}")
+            powershell -Command "choco install $choco_tools -y"
+
+            echo -e "\e[92m✅ Required tools installed via Chocolatey.\e[0m"
+        ;;
+        Darwin)
+            echo -e "\e[94mDetected macOS. Installing compression tools using Homebrew...\e[0m"
+
+            # Check if Homebrew is already installed
+            if ! command -v brew &>/dev/null; then
+            echo -e "\e[93mHomebrew not found. Installing...\e[0m"
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+            # Set up brew environment (Apple Silicon or Intel)
+            if [[ -d /opt/homebrew ]]; then
+                echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+                eval "$(/opt/homebrew/bin/brew shellenv)"
+            elif [[ -d /usr/local/Homebrew ]]; then
+                echo 'eval "$(/usr/local/bin/brew shellenv)"' >> ~/.zprofile
+                eval "$(/usr/local/bin/brew shellenv)"
+            else
+                echo -e "\e[91m❌ Homebrew installation path not found.\e[0m"
+                exit 1
+            fi
+            fi
+
+            # Re-check if brew is working
+            if ! command -v brew &>/dev/null; then
+            echo -e "\e[91m❌ Homebrew still not available in PATH.\e[0m"
             exit 1
             fi
-            ;;
+
+            echo -e "\e[94mInstalling missing tools using brew...\e[0m"
+            brew install "${missing_tools[@]}"
+        ;;
         *)
             echo -e "\e[91mUnsupported OS: $OS\e[0m"
             exit 1
@@ -126,75 +155,185 @@ detect_os(){
     return 0
 }
 
-execute_operation(){
+# execute_operation() {
+#     for f in "${file[@]}"; do
+#         if [[ -z $1 ]]; then
+#             echo -e "\e[91m<Missing tool>\e[0m"
+#             exit 1
+#         fi
+
+#         # ZIP Handling
+#         if [[ $1 == "zip" ]]; then
+#             if [[ -d $f ]]; then
+#                 echo -e "\e[93mCompressing directory: $f using zip\e[0m"
+#                 zip -r "archive.zip" "$f" 2>/dev/null
+#             else
+#                 echo -e "\e[93mCompressing file: $f using zip\e[0m"
+#                 zip "archive.zip" "$f" 2>/dev/null
+#             fi
+#         else
+#             # Other tool handling (gzip, bzip2, compress, etc.)
+#             echo -e "\e[93mCompressing with: $1 -> $f\e[0m"
+#             $1 "$f" 2>/dev/null
+#         fi
+
+#         # Success check
+#         if [[ $? -eq 0 ]]; then
+#             if [[ -n $2 ]]; then
+#                 echo -e "\e[92mYour $1 file: $f.$2\e[0m"
+#             else
+#                 echo -e "\e[92mYour $1 file: $f\e[0m"
+#             fi
+#         else
+#             echo -e "\e[91mError compressing $f with $1.\e[0m"
+#         fi
+
+#         # Optional TAR support (e.g., tar -czf archive.tar.gz folder/)
+#         if [[ -n "$3" ]]; then
+#     if [[ "$3" == -*c* ]]; then  # Compress
+#         if [[ -d $f || -f $f ]]; then
+#             tar -"$3" "$f.$2" "$f" 2>/dev/null
+#             if [[ $? -ne 0 ]]; then 
+#                 echo -e "\e[91m❌ Error: $f could not be compressed to $f.$2.\e[0m"
+#             else 
+#                 echo -e "\e[92m✅ Success: $f compressed to $f.$2.\e[0m"
+#             fi
+#         else
+#             echo -e "\e[91m❌ Skipped TAR: $f is not a valid file or directory.\e[0m"
+#         fi
+#     elif [[ "$3" == -*x* ]]; then  # Extract
+#         if [[ -f $f ]]; then
+#             tar -"$3" "$f" 2>/dev/null
+#             if [[ $? -ne 0 ]]; then 
+#                 echo -e "\e[91m❌ Error: $f could not be extracted.\e[0m"
+#             else 
+#                 echo -e "\e[92m✅ Success: $f extracted successfully.\e[0m"
+#             fi
+#         else
+#             echo -e "\e[91m❌ Skipped TAR: $f is not a valid archive file.\e[0m"
+#         fi
+#     else
+#         echo -e "\e[93m⚠️ Unknown TAR operation: $3\e[0m"
+#     fi
+# fi
+#     done
+# }
+execute_operation() {
     for f in "${file[@]}"; do
-        if [[ -z $1 ]];then echo "<missing tool>"; exit 1; fi
-        if [[ $1 == "zip" ]]; then
-            if [[ -d $f ]]; then
-                echo -e "\e[93mCompressing directory: $f\e[0m"
-                $1 -r "archive.zip" "$f" 2>/dev/null
-                
-            else
-                echo -e "\e[93mCompressing file: $f\e[0m"
-                $1 "archive.zip" "$f" 2>/dev/null
-            fi
-            
+        if [[ -z $1 ]]; then
+            echo -e "\e[91m<Missing tool>\e[0m"
+            exit 1
         fi
-        $1 "$f"
-        if [[ $? -eq 0 ]]; then
-            if [[ $2 ]];then
-                echo "Your $1 file : $f.$2"
+
+        # ZIP Handling
+        if [[ "$1" == "zip" ]]; then
+            if [[ -d "$f" ]]; then
+                echo -e "\e[93m📦 Compressing directory: $f using zip\e[0m"
+                zip -r "archive.zip" "$f" 2>/dev/null
+            else
+                echo -e "\e[93m📦 Compressing file: $f using zip\e[0m"
+                zip "archive.zip" "$f" 2>/dev/null
             fi
-            echo "Your $1 file : $f"
         else
-            echo -e "\e[91mError compressing file with $1.\e[0m"
+            # Other tools: gzip, bzip2, compress, etc.
+            echo -e "\e[93m📦 Compressing with: $1 -> $f\e[0m"
+            $1 "$f" 2>/dev/null
+        fi
+
+        # Check success
+        if [[ $? -eq 0 ]]; then
+            if [[ -n $2 ]]; then
+                echo -e "\e[92m✅ Output file: $f.$2\e[0m"
+            else
+                echo -e "\e[92m✅ Output file: $f\e[0m"
+            fi
+        else
+            echo -e "\e[91m❌ Error compressing $f with $1.\e[0m"
+        fi
+
+        # TAR support (compression or extraction)
+        if [[ -n "$3" ]]; then
+            if [[ "$3" == -*c* ]]; then  # Compress
+                if [[ -d "$f" || -f "$f" ]]; then
+                    tar $3 "$f.$2" "$f" 2>/dev/null
+                    if [[ $? -eq 0 ]]; then
+                        echo -e "\e[92m✅ TAR compressed: $f → $f.$2\e[0m"
+                    else
+                        echo -e "\e[91m❌ TAR compression failed: $f\e[0m"
+                    fi
+                else
+                    echo -e "\e[91m❌ Skipped TAR: $f is not a valid file or directory.\e[0m"
+                fi
+
+            elif [[ "$3" == -*x* ]]; then  # Extract
+                if [[ -f "$f" ]]; then
+                    tar $3 "$f" 2>/dev/null
+                    if [[ $? -eq 0 ]]; then
+                        echo -e "\e[92m✅ Extracted: $f successfully.\e[0m"
+                    else
+                        echo -e "\e[91m❌ Extraction failed: $f\e[0m"
+                    fi
+                else
+                    echo -e "\e[91m❌ Skipped TAR: $f is not a valid archive file.\e[0m"
+                fi
+
+            else
+                echo -e "\e[93m⚠️ Unknown TAR operation: $3\e[0m"
+            fi
         fi
     done
 }
 
-# $1=tool $2=prefix
-
-
-while true; do
-    echo -e "\e[92m"
-    echo "Welcome to Zipzilla! Please choose an option from the menu below:"
-    echo "1. gzip for $file"
-    echo "2. bzip2 for $file"
-    echo "3. compress $file"
-    echo "4. zip $file"
-    echo "5. extract gzip $file"
-    echo "6. extract bzip2 $file"
-    echo "7. decompress $file"
-    echo "8. unzip $file"
-    echo "9. Exit"
-    read -p "Enter your choice: " choice
-    echo -e "\e[0m"
-    case $choice in
+# $1=tool $2=prefix $3=tar-type
+echo -e "\e[92m"
+echo "Welcome to Zipzilla! Please choose an option from the menu below:"
+echo "1. Files extraction/compression"
+echo "2. Folders extraction/compression"
+echo "3. Images extraction/compression"
+echo "4. Videos extraction/compression"
+echo "5. Linux/Android applications extraction/compression"
+echo "6. Exit"
+read -p "Enter your option : " select_extraction
+echo -e "\e[0m"
+case $select_extraction in
+    1)
+        echo -e "\e[91mFile extraction/compression.\e[0m"
+        echo
+        echo -e "\e[92m"
+        echo "Welcome to Zipzilla! Please choose an option from the menu below:"
+        echo "1. gzip for $file"
+        echo "2. bzip2 for $file"
+        echo "3. compress $file"
+        echo "4. zip $file"
+        echo "5. extract *.gz = $file"
+        echo "6. extract *.bz2 = $file"
+        echo "7. decompress $file"
+        echo "8. unzip $file"
+        echo "9. Exit"
+        read -p "Enter your choice: " choice
+        echo -e "\e[0m"
+        case $choice in
         1)
             # here i want to install that particular tool for usecase.
             missing_tools=(gzip)
             detect_os
             execute_operation gzip .gz
-            break
-        ;;
+            exit 1;;
         2)
             missing_tools=(bzip2)
             detect_os
             execute_operation bzip2 .bz2
-            break
-        ;;
+            exit 1;;
         3)
             missing_tools=(compress)
             detect_os
             execute_operation compress .Z
-            break
-        ;;
+            exit 1;;
         4)
             missing_tools=(zip)
             detect_os
             execute_operation zip archive.zip
-            break
-        ;;
+            exit 1;;
         5)
             missing_tools=(gzip)
             detect_os
@@ -204,8 +343,7 @@ while true; do
                 echo -e "\e[91mFile is not a gzip file.\e[0m"
                 exit 1;
             fi
-            break
-        ;;
+            exit 1;;
         6)
             missing_tools=(bzip2)
             detect_os
@@ -215,8 +353,7 @@ while true; do
                 echo -e "\e[91mFile is not a bzip2 file.\e[0m"
                 exit 1;
             fi
-            break
-        ;;
+            exit 1;;
         7)
             missing_tools=(ncompress)
             detect_os
@@ -226,20 +363,155 @@ while true; do
                 echo -e "\e[91m$file is not a compressed.\e[0m"
                 exit 1;
             fi
-            break
-        ;;
+            exit 1;;
         8)
             missing_tools=(unzip)
             detect_os
             execute_operation unzip
-        break;;
-        9)
+            exit 1;;
+        9)  
             echo -e "\e[91mExiting program\e[0m"
-        break;;
+            exit 1;;
+
         *)
             echo -e "\e[31m"
             echo "Invalid choice. Please try again."
             echo -e "\e[0m"
-        ;;
-    esac
-done
+            exit 1;;
+        esac
+    ;;
+    2)  
+        echo -e "\e[91mFolder extraction/compression.\e[0m"
+        echo
+        echo -e "\e[92m"
+        echo "Please choose an option from the menu below:" 
+        echo "1. zip $file"
+        echo "2. tar + gzip $file"
+        echo "3. tar + bzip2 $file"
+        echo "4. tar + xz $file"
+        echo "5. unzip $file"
+        echo "6. extract *.tar.gz = $file"
+        echo "7. extract *.tar.bz2 = $file"
+        echo "8. extract *.tar.xz = $file"
+        read -p "Enter your choice : " choice1
+        echo -e "\e[0m"
+        case $choice1 in
+            1)
+                missing_tools=(zip)
+                detect_os
+                execute_operation zip archive.zip
+                exit 1;; 
+            2)  
+                missing_tools=(tar gzip)
+                detect_os
+                execute_operation tar archive.tar.gz -czvf 
+                exit 1;;
+            3) 
+                missing_tools=(tar bzip2)
+                detect_os
+                execute_operation tar archive.tar.bz2 -cjvf 
+                exit 1;;
+            4)
+                missing_tools=(tar xz)
+                detect_os
+                execute_operation tar archive.tar.xz -cJvf 
+                exit 1
+            ;;
+            5)  
+                missing_tools=(unzip)
+                detect_os
+                execute_operation unzip archive.zip
+                exit 1
+            ;;
+            6) 
+               missing_tools=(tar)
+                detect_os
+                execute_operation tar archive.tar.gz -xzvf
+                exit 1
+            ;; 
+            7) 
+               missing_tools=(tar)
+                detect_os
+                execute_operation tar archive.tar.bz2 -xjvf
+                exit 1
+            ;; 
+            8) 
+               missing_tools=(tar)
+                detect_os
+                execute_operation tar archive.tar.xz -xJvf
+                exit 1
+            ;;
+            *)
+                echo -e "\e[31m"
+                echo "Invalid choice. Please try again."
+                echo -e "\e[0m"
+                exit 1;;
+        esac
+    ;;
+    3)
+        echo -e "\e[91mImages extraction/compression.\e[0m"
+        echo -e "\e[92m"
+        echo "Only jpg, jpeg, png, and webp files are supported."
+        echo "Please choose an option from the menu below:" 
+        echo "1. zip $file"
+        echo "2. tar + gzip $file"
+        echo "3. tar + bzip2 $file"
+        echo "4. unzip $file"
+        echo "5. extract *.tar.gz = $file"
+        echo "6. extract *.tar.bz2 = $file"
+        read -p "Enter your choice : " choice2
+        echo -e "\e[0m"
+        case $choice2 in
+            1)
+                missing_tools=(zip)
+                detect_os
+                execute_operation zip archive.zip
+                exit 1;; 
+            2)  
+                missing_tools=(tar gzip)
+                detect_os
+                execute_operation tar archive.tar.gz -czvf 
+                exit 1;;
+            3) 
+                missing_tools=(tar bzip2)
+                detect_os
+                execute_operation tar archive.tar.bz2 -cjvf 
+                exit 1;;
+            4)
+                missing_tools=(unzip)
+                detect_os
+                execute_operation unzip archive.zip
+                exit 1
+            ;;
+            5) 
+               missing_tools=(tar)
+                detect_os
+                execute_operation tar archive.tar.gz -xzvf
+                exit 1
+            ;; 
+            6) 
+               missing_tools=(tar)
+                detect_os
+                execute_operation tar archive.tar.bz2 -xjvf
+                exit 1
+            ;; 
+            *)
+                echo -e "\e[31m"
+                echo "Invalid choice. Please try again."
+                echo -e "\e[0m"
+                exit 1;;
+        esac
+    ;;
+    4)
+        echo -e "\e[91mVideos extraction/compression.\e[0m"
+        echo -e "\e[92m"
+        echo "Please choose an option from the menu below:" 
+    ;;
+
+    *)
+        echo -e "\e[31m"
+        echo "Invalid choice. Please try again."
+        echo -e "\e[0m"
+        exit 1;;
+    
+esac
