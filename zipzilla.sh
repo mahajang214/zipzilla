@@ -38,17 +38,17 @@ if [[ $# -eq 0 ]]; then
     banner
     echo -e "Usage: $0 \e[92m<file1> <file2> ...\e[0m || \e[92m<folder1> <folder2> ...\e[0m"
     echo  # Description block
-    echo -e "\e[92m"
-    echo "🗜️  Zipzilla is a blazing-fast, cross-platform compression tool for Linux, macOS, and Windows."
+    echo -e "\e[92m🗜️  Zipzilla is a blazing-fast, cross-platform compression tool for Linux, macOS, and Windows."
     echo "   It supports gzip, bzip2, compress, and zip — all in one place!"
-    echo
     echo "🌍  Universal Compatibility:"
     echo "   ✔ Auto-detects OS and installs missing tools"
     echo "   ✔ Compresses and extracts files or folders easily"
     echo "   ✔ Ideal for scripting, backups, automation"
-    echo
     echo "⚡  Built in pure Bash for maximum portability and power."
-    echo -e "\e[0m"
+     echo "💡  100% Open Source | Built with ♥ in Bash"
+    echo -e "🔗  GitHub: \e[94mhttps://github.com/mahajang214/zipzilla.git\e[92m"
+    echo -e "📦  Contribute, fork, and stay updated with the latest improvements!\e[0m"
+
     exit 1
 fi
 file=()
