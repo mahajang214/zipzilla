@@ -90,11 +90,24 @@ detect_os(){
             fi
         ;;
         MINGW*|MSYS*|CYGWIN*|Windows_NT)
-            echo -e "\e[93m⚠️ Detected Windows (Git Bash/MSYS2/WSL).\e[0m"
-            echo -e "Please install the following manually: ${missing_tools[*]}"
-            echo -e "Recommended:\n - Install MSYS2 (https://www.msys2.org/)\n - Then use: pacman -S ${missing_tools[*]}"
+            echo -e "\e[93m⚠️ Detected Windows environment (Git Bash/MSYS2/WSL).\e[0m"
+
+            # Attempt MSYS2 automated installation
+            if command -v pacman &>/dev/null; then
+            echo -e "\e[94mDetected MSYS2. Installing missing tools via pacman...\e[0m"
+            pacman -Sy --noconfirm "${missing_tools[@]}"
+            elif grep -qi microsoft /proc/version 2>/dev/null; then
+            echo -e "\e[94mDetected WSL (Windows Subsystem for Linux).\e[0m"
+            echo -e "➡ Installing using apt..."
+            sudo apt-get update && sudo apt-get install -y "${missing_tools[@]}"
+            else
+            echo -e "\e[91m❌ Automatic installation failed or unsupported Windows shell.\e[0m"
+            echo -e "Please install the following tools manually: ${missing_tools[*]}"
+            echo -e "💡 Tip: Use MSYS2 from https://www.msys2.org/ and run:\n  pacman -S ${missing_tools[*]}"
+            echo -e "Or use Chocolatey (https://chocolatey.org/) if available."
             exit 1
-        ;;
+            fi
+            ;;
         *)
             echo -e "\e[91mUnsupported OS: $OS\e[0m"
             exit 1
