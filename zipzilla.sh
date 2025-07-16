@@ -600,13 +600,19 @@ case $select_extraction in
                 missing_tools=(ffmpeg)
                 detect_os
                 for f in "$file"; do
-                     ffmpeg -i "$f" -q:a 0 -map a "${f%.*}.mp3"
-                      if [[ $? -eq 0 ]]; then
-                
-                        echo -e "\e[92m$f is successfully compressed.\e[0m"
-                    else 
-                        echo -e "\e[91mError$f is not compressed.\e[0m"
+                    #  ffmpeg -i "$f" -q:a 0 -map a "${f%.*}.mp3"
+                    # check video have any audio
+                    has_audio=$(ffprobe -i "$f" -show_streams -select_streams a -loglevel error | grep -c "^")
+                    if [[ $has_audio -eq 0 ]]; then
+                        echo -e "\e[91mError: $f is not have audio.\e[0m"
+                        exit 1;
                     fi
+                        ffmpeg -i "$f" -vn -acodec libmp3lame -q:a 4 "${f%.*}.mp3"
+                        if [[ $? -eq 0 ]]; then
+                            echo -e "\e[92m$f is successfully compressed.\e[0m"
+                        else 
+                            echo -e "\e[91mError$f is not compressed.\e[0m"
+                        fi
                 done
                 exit 1
             ;;
@@ -631,7 +637,7 @@ case $select_extraction in
                 exit 1
             ;;
             9)
-                  missing_tools=(ffmpeg)
+                missing_tools=(ffmpeg)
                 detect_os
                 echo -e "\e[92m18–23\e[0m: Good quality \n\e[91m28–30\e[0m: More compressed, lower quality"
                 read -p "Enter video quality: " output_video_quality
@@ -651,9 +657,10 @@ case $select_extraction in
                 fi
                 for f in "$file"; do
                     if [ $output_file_extension ]; then
-                        ffmpeg -i $f -vcodec libx264 -crf $output_video_quality $output_file+$output_file_extension
+                        ffmpeg -i "$f" -vcodec libx264 -crf "$output_video_quality" "${output_file}${output_file_extension}"
+
                     fi
-                    ffmpeg -i $f -vcodec libx264 -crf output_video_quality output_file
+                    ffmpeg -i "$f" -vcodec libx264 -crf "$output_video_quality" "$output_file"
 
                     if [[ $? -eq 0 ]]; then
                         echo -e "\e[92m$f successfully compressed.\e[0m"
