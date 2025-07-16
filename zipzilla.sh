@@ -54,17 +54,8 @@ if [[ $# -eq 0 ]]; then
     echo -e "  ✔ Works seamlessly on Linux, macOS, and Windows"
     echo -e "${YELLOW}🔓  100% Open Source | Built with ♥ by Gaurav Mahajan"
     echo -e "${BLUE}🔗  GitHub: https://github.com/mahajang214/zipzilla.git${RESET}"
-    echo -e "${GREEN}📦  Contribute, star, or fork the project to help it grow!"
-    # echo -e "\e[92m🗜️  Zipzilla is a blazing-fast, cross-platform compression tool for Linux, macOS, and Windows."
-    # echo "   It supports gzip, bzip2, compress, and zip — all in one place!"
-    # echo "🌍  Universal Compatibility:"
-    # echo "   ✔ Auto-detects OS and installs missing tools"
-    # echo "   ✔ Compresses and extracts files or folders easily"
-    # echo "   ✔ Ideal for scripting, backups, automation"
-    # echo "⚡  Built in pure Bash for maximum portability and power."
-    #  echo "💡  100% Open Source | Built with ♥ in Bash"
-    # echo -e "🔗  GitHub: \e[94mhttps://github.com/mahajang214/zipzilla.git\e[92m"
-    # echo -e "📦  Contribute, fork, and stay updated with the latest improvements!\e[0m"
+    echo -e "${GREEN}📦  Contribute, star, or fork the project to help it grow!\e[0m"
+    
 
     exit 1
 fi
