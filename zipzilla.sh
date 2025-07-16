@@ -5,8 +5,10 @@ banner() {
     term_width=$(tput cols)
     
     # Top border
-    printf '%*s\n' "$term_width" '' | tr ' ' '-'
     
+    printf '%*s\n' "$term_width" '' | tr ' ' '-'
+  
+
     # Fancy title using toilet (with fallback to echo)
     echo -e "\e[92m"
       if command -v toilet &>/dev/null; then
@@ -30,24 +32,39 @@ banner() {
     printf "%${padding}s%s\n" "" "$subtitle"
     
     # Bottom border
+    
     printf '%*s\n' "$term_width" '' | tr ' ' '-'
+
 }
 banner
+GREEN="\e[92m"
+BLUE="\e[94m"
+YELLOW="\e[93m"
+RESET="\e[0m"
 if [[ $# -eq 0 ]]; then
     clear
     banner
-    echo -e "Usage: $0 \e[92m<file1> <file2> ...\e[0m || \e[92m<folder1> <folder2> ...\e[0m"
+    echo -e "Usage: $0 \e[92m<file1> <file2> ...\e[0m || \e[92m<folder1> <folder2> ...\e[0m || \e[92m<image1> <image2> ...\e[0m || \e[92m<video1> <video2> ...\e[0m"
     echo  # Description block
-    echo -e "\e[92m🗜️  Zipzilla is a blazing-fast, cross-platform compression tool for Linux, macOS, and Windows."
-    echo "   It supports gzip, bzip2, compress, and zip — all in one place!"
-    echo "🌍  Universal Compatibility:"
-    echo "   ✔ Auto-detects OS and installs missing tools"
-    echo "   ✔ Compresses and extracts files or folders easily"
-    echo "   ✔ Ideal for scripting, backups, automation"
-    echo "⚡  Built in pure Bash for maximum portability and power."
-     echo "💡  100% Open Source | Built with ♥ in Bash"
-    echo -e "🔗  GitHub: \e[94mhttps://github.com/mahajang214/zipzilla.git\e[92m"
-    echo -e "📦  Contribute, fork, and stay updated with the latest improvements!\e[0m"
+    echo -e "${GREEN}🗜️  Zipzilla — Your Ultimate Compression Sidekick${RESET}"
+    echo -e "${YELLOW}A blazing-fast, cross-platform compression and extraction tool built entirely in Bash.${RESET}"
+    echo -e "${BLUE}✨ Features:"
+    echo -e "${GREEN}  ✔ Unified interface for gzip, bzip2, zip, xz, and tar"
+    echo -e "  ✔ Supports both file and folder compression/extraction"
+    echo -e "  ✔ Works seamlessly on Linux, macOS, and Windows"
+    echo -e "${YELLOW}🔓  100% Open Source | Built with ♥ by Gaurav Mahajan"
+    echo -e "${BLUE}🔗  GitHub: https://github.com/mahajang214/zipzilla.git${RESET}"
+    echo -e "${GREEN}📦  Contribute, star, or fork the project to help it grow!"
+    # echo -e "\e[92m🗜️  Zipzilla is a blazing-fast, cross-platform compression tool for Linux, macOS, and Windows."
+    # echo "   It supports gzip, bzip2, compress, and zip — all in one place!"
+    # echo "🌍  Universal Compatibility:"
+    # echo "   ✔ Auto-detects OS and installs missing tools"
+    # echo "   ✔ Compresses and extracts files or folders easily"
+    # echo "   ✔ Ideal for scripting, backups, automation"
+    # echo "⚡  Built in pure Bash for maximum portability and power."
+    #  echo "💡  100% Open Source | Built with ♥ in Bash"
+    # echo -e "🔗  GitHub: \e[94mhttps://github.com/mahajang214/zipzilla.git\e[92m"
+    # echo -e "📦  Contribute, fork, and stay updated with the latest improvements!\e[0m"
 
     exit 1
 fi
@@ -194,70 +211,6 @@ detect_os(){
     done
     return 0
 }
-
-# execute_operation() {
-#     for f in "${file[@]}"; do
-#         if [[ -z $1 ]]; then
-#             echo -e "\e[91m<Missing tool>\e[0m"
-#             exit 1
-#         fi
-
-#         # ZIP Handling
-#         if [[ $1 == "zip" ]]; then
-#             if [[ -d $f ]]; then
-#                 echo -e "\e[93mCompressing directory: $f using zip\e[0m"
-#                 zip -r "archive.zip" "$f" 2>/dev/null
-#             else
-#                 echo -e "\e[93mCompressing file: $f using zip\e[0m"
-#                 zip "archive.zip" "$f" 2>/dev/null
-#             fi
-#         else
-#             # Other tool handling (gzip, bzip2, compress, etc.)
-#             echo -e "\e[93mCompressing with: $1 -> $f\e[0m"
-#             $1 "$f" 2>/dev/null
-#         fi
-
-#         # Success check
-#         if [[ $? -eq 0 ]]; then
-#             if [[ -n $2 ]]; then
-#                 echo -e "\e[92mYour $1 file: $f.$2\e[0m"
-#             else
-#                 echo -e "\e[92mYour $1 file: $f\e[0m"
-#             fi
-#         else
-#             echo -e "\e[91mError compressing $f with $1.\e[0m"
-#         fi
-
-#         # Optional TAR support (e.g., tar -czf archive.tar.gz folder/)
-#         if [[ -n "$3" ]]; then
-#     if [[ "$3" == -*c* ]]; then  # Compress
-#         if [[ -d $f || -f $f ]]; then
-#             tar -"$3" "$f.$2" "$f" 2>/dev/null
-#             if [[ $? -ne 0 ]]; then 
-#                 echo -e "\e[91m❌ Error: $f could not be compressed to $f.$2.\e[0m"
-#             else 
-#                 echo -e "\e[92m✅ Success: $f compressed to $f.$2.\e[0m"
-#             fi
-#         else
-#             echo -e "\e[91m❌ Skipped TAR: $f is not a valid file or directory.\e[0m"
-#         fi
-#     elif [[ "$3" == -*x* ]]; then  # Extract
-#         if [[ -f $f ]]; then
-#             tar -"$3" "$f" 2>/dev/null
-#             if [[ $? -ne 0 ]]; then 
-#                 echo -e "\e[91m❌ Error: $f could not be extracted.\e[0m"
-#             else 
-#                 echo -e "\e[92m✅ Success: $f extracted successfully.\e[0m"
-#             fi
-#         else
-#             echo -e "\e[91m❌ Skipped TAR: $f is not a valid archive file.\e[0m"
-#         fi
-#     else
-#         echo -e "\e[93m⚠️ Unknown TAR operation: $3\e[0m"
-#     fi
-# fi
-#     done
-# }
 execute_operation() {
     for f in "${file[@]}"; do
         if [[ -z $1 ]]; then
@@ -729,8 +682,240 @@ case $select_extraction in
 
 
     ;;
-    
-    
+    5)
+        echo -e "\e[91mLinux/Android applications extraction/compression.\e[0m"
+        echo -e "\e[92m"
+        echo "Please choose an option from the menu below:" 
+        echo "1. extract .deb file = $file"
+        echo "2. extract .rpm file = $file"
+        echo "3. extract .apk file = $file"
+        echo "4. compress .deb file = $file"
+        echo "5. compress .rpm file = $file"
+        echo "6. compress .apk file = $file"
+        echo "7. Exit"
+        read -p "Enter your choice : " choice4
+        echo -e "\e[0m"
+        case $choice4 in
+            1)
+                missing_tools=(dpkg)
+                detect_os
+                for f in "${file[@]}"; do
+                    if [[ $f == *.deb ]]; then
+                        dpkg -x "$f" "${f%.deb}_extracted"
+                        if [[ $? -eq 0 ]]; then
+                            echo -e "\e[92m$f successfully extracted.\e[0m"
+                        else
+                            echo -e "\e[91mError: $f could not be extracted.\e[0m"
+                        fi
+                    else
+                        echo -e "\e[91m$f is not a valid .deb file.\e[0m"
+                    fi
+                done
+                exit 1;;
+            2)
+                missing_tools=(rpm2cpio cpio)
+                detect_os
+                for f in "${file[@]}"; do
+                    if [[ $f == *.rpm ]]; then
+                        rpm2cpio "$f" | cpio -idmv
+                        if [[ $? -eq 0 ]]; then
+                            echo -e "\e[92m$f successfully extracted.\e[0m"
+                        else
+                            echo -e "\e[91mError: $f could not be extracted.\e[0m"
+                        fi
+                    else
+                        echo -e "\e[91m$f is not a valid .rpm file.\e[0m"
+                    fi
+                done
+                exit 1;;
+            3)
+                missing_tools=(apktool)
+                detect_os
+                for f in "${file[@]}"; do
+                    if [[ $f == *.apk ]]; then
+                        apktool d "$f" -o "${f%.apk}_extracted"
+                        if [[ $? -eq 0 ]]; then
+                            echo -e "\e[92m$f successfully extracted.\e[0m"
+                        else
+                            echo -e "\e[91mError: $f could not be extracted.\e[0m"
+                        fi
+                    else
+                        echo -e "\e[91m$f is not a valid .apk file.\e[0m"
+                    fi
+                done
+                exit 1;;
+            4)
+                missing_tools=(dpkg)
+                detect_os
+                for f in "${file[@]}"; do
+                    if [[ $f == *.deb ]]; then
+                        dpkg-deb --build "${f%.deb}_extracted" "$f"
+                        if [[ $? -eq 0 ]]; then
+                            echo -e "\e[92m$f successfully compressed.\e[0m"
+                        else
+                            echo -e "\e[91mError: $f could not be compressed.\e[0m"
+                        fi
+                    else
+                        echo -e "\e[91m$f is not a valid .deb file.\e[0m"
+                    fi
+                done
+                exit 1;;
+            5)
+                missing_tools=(rpmbuild)    
+                detect_os   
+                for f in "${file[@]}"; do
+                    if [[ $f == *.rpm ]]; then
+                        rpmbuild -bb "$f"
+                        if [[ $? -eq 0 ]]; then
+                            echo -e "\e[92m$f successfully compressed.\e[0m"
+                        else
+                            echo -e "\e[91mError: $f could not be compressed.\e[0m"
+                        fi
+                    else
+                        echo -e "\e[91m$f is not a valid .rpm file.\e[0m"
+                    fi
+                done
+                exit 1;;
+            6)
+                missing_tools=(apktool)
+                detect_os
+                for f in "${file[@]}"; do
+                    if [[ $f == *.apk ]]; then
+                        apktool b "${f%.apk}_extracted" -o "$f"
+                        if [[ $? -eq 0 ]]; then
+                            echo -e "\e[92m$f successfully compressed.\e[0m"
+                        else
+                            echo -e "\e[91mError: $f could not be compressed.\e[0m"
+                        fi
+                    else
+                        echo -e "\e[91m$f is not a valid .apk file.\e[0m"
+                    fi
+                done
+                exit 1;;    
+            7)
+                echo -e "\e[91mExiting program\e[0m"
+                exit 1;;
+            *)
+                echo -e "\e[31m"
+                echo "Invalid choice. Please try again."
+                echo -e "\e[0m"
+                exit 1;;
+        esac
+    ;;
+    6)
+        echo -e "\e[91mConvert video format.\e[0m"
+        echo -e "\e[92m"
+        echo "Please choose an option from the menu below:"
+        echo "1. Convert video to mp4"
+        echo "2. Convert video to mkv"
+        echo "3. Convert video to mpeg"
+        echo "4. Convert video to webm"
+        echo "5. Convert video to avi"
+        echo "6. Convert video to flv"
+        echo "7. Convert video to mov"
+        echo "8. Exit"
+        read -p "Enter your choice : " convert_choice
+        echo -e "\e[0m" 
+        case $convert_choice in
+            1)
+                missing_tools=(ffmpeg)
+                detect_os
+                for f in "${file[@]}"; do
+                    ffmpeg -i "$f" "${f%.*}.mp4"
+                    if [[ $? -eq 0 ]]; then
+                        echo -e "\e[92m$f successfully converted to mp4.\e[0m"
+                    else
+                        echo -e "\e[91mError: $f could not be converted to mp4.\e[0m"
+                    fi
+                done
+                exit 1;;
+            2)
+                missing_tools=(ffmpeg)
+                detect_os
+                for f in "${file[@]}"; do
+                    ffmpeg -i "$f" "${f%.*}.mkv"
+                    if [[ $? -eq 0 ]]; then
+                        echo -e "\e[92m$f successfully converted to mkv.\e[0m"
+                    else
+                        echo -e "\e[91mError: $f could not be converted to mkv.\e[0m"
+                    fi
+                done
+                exit 1;;
+            3)
+                missing_tools=(ffmpeg)
+                detect_os
+                for f in "${file[@]}"; do
+                    ffmpeg -i "$f" "${f%.*}.mpeg"
+                    if [[ $? -eq 0 ]]; then
+                        echo -e "\e[92m$f successfully converted to mpeg.\e[0m"
+                    else
+                        echo -e "\e[91mError: $f could not be converted to mpeg.\e[0m"
+                    fi
+                done
+                exit 1;;
+            4)
+                missing_tools=(ffmpeg)
+                detect_os
+                for f in "${file[@]}"; do
+                    ffmpeg -i "$f" "${f%.*}.webm"
+                    if [[ $? -eq 0 ]]; then
+                        echo -e "\e[92m$f successfully converted to webm.\e[0m"
+                    else
+                        echo -e "\e[91mError: $f could not be converted to webm.\e[0m"
+                    fi
+                done
+                exit 1;;
+            5)
+                missing_tools=(ffmpeg)
+                detect_os
+                for f in "${file[@]}"; do
+                    ffmpeg -i "$f" "${f%.*}.avi"
+                    if [[ $? -eq 0 ]]; then
+                        echo -e "\e[92m$f successfully converted to avi.\e[0m"
+                    else
+                        echo -e "\e[91mError: $f could not be converted to avi.\e[0m"
+                    fi      
+                done
+                exit 1;;
+            6)
+                missing_tools=(ffmpeg)
+                detect_os
+                for f in "${file[@]}"; do
+                    ffmpeg -i "$f" "${f%.*}.flv"
+                    if [[ $? -eq 0 ]]; then
+                        echo -e "\e[92m$f successfully converted to flv.\e[0m"
+                    else
+                        echo -e "\e[91mError: $f could not be converted to flv.\e[0m"
+                    fi
+                done
+                exit 1;;
+            7)
+                missing_tools=(ffmpeg)
+                detect_os
+                for f in "${file[@]}"; do
+                    ffmpeg -i "$f" "${f%.*}.mov"
+                    if [[ $? -eq 0 ]]; then
+                        echo -e "\e[92m$f successfully converted to mov.\e[0m"
+                    else
+                        echo -e "\e[91mError: $f could not be converted to mov.\e[0m"
+                    fi 
+                done
+                exit 1;;
+            8)
+                echo -e "\e[91mExiting program\e[0m"
+                exit 1;;
+            *)
+                echo -e "\e[31m"
+                echo "Invalid choice. Please try again."
+                echo -e "\e[0m"
+                exit 1;;
+        esac  
+    ;;
+    7)
+        echo -e "\e[91m"
+        echo "Exiting..."
+        echo -e "\e[0m"  
+    ;;
     *)
         echo -e "\e[31m"
         echo "Invalid choice. Please try again."
