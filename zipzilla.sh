@@ -27,7 +27,7 @@ banner() {
     echo -e "\e[0m"
     
     # Subtitle centered
-    subtitle="⚡ Welcome to zipzilla. A Powerful CLI Compression Tool ⚡"
+    subtitle="⚡ Welcome to zipzilla. A Powerful CLI Compression/Extraction Tool ⚡"
     padding=$(( (term_width - ${#subtitle}) / 2 ))
     printf "%${padding}s%s\n" "" "$subtitle"
     
