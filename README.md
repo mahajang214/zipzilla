@@ -4,6 +4,11 @@
 
 A blazing-fast, cross-platform compression and extraction tool built entirely in Bash. Zipzilla provides a unified interface for managing various file formats with an intuitive CLI experience.
 
+### 📷 Screenshot
+
+![Zipzilla banner](./images/zipzilla_banner.png)
+![Zipzilla banner](./images/zipzilla_menu.png)
+
 ## ✨ Features
 
 - **Universal File Handling**
