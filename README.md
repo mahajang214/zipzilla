@@ -7,13 +7,13 @@ A blazing-fast, cross-platform compression and extraction tool built entirely in
 ### 📷 Screenshot
 
 ![Zipzilla banner](./images/zipzilla_banner.png)
-![Zipzilla banner](./images/zipzilla_main_menu.png)
-![Zipzilla banner](./images/zipzilla_file_menu.png)
-![Zipzilla banner](./images/zipzilla_folder_menu.png)
-![Zipzilla banner](./images/zipzilla_image_menu.png)
-![Zipzilla banner](./images/zipzilla_video_format.png)
-![Zipzilla banner](./images/zipzilla_android_linux.png)
-![Zipzilla banner](./images/zipzilla_video_convert_format.png)
+![Zipzilla main menu](./images/zipzilla_main_menu.png)
+![Zipzilla file menu](./images/zipzilla_file_menu.png)
+![Zipzilla folder menu](./images/zipzilla_folder_menu.png)
+![Zipzilla images menu](./images/zipzilla_image_menu.png)
+![Zipzilla video menu](./images/zipzilla_video_format.png)
+![Zipzilla android/linux menu](./images/zipzilla_android_linux.png)
+![Zipzilla video converter menu](./images/zipzilla_video_convert_format.png)
 
 ## ✨ Features
 
