@@ -7,17 +7,25 @@ A blazing-fast, cross-platform compression and extraction tool built entirely in
 ### 📷 Screenshot
 
 ![Zipzilla banner](./images/zipzilla_banner.png)
-![Zipzilla banner](./images/zipzilla_menu.png)
+![Zipzilla banner](./images/zipzilla_main_menu.png)
+![Zipzilla banner](./images/zipzilla_file_menu.png)
+![Zipzilla banner](./images/zipzilla_folder_menu.png)
+![Zipzilla banner](./images/zipzilla_image_menu.png)
+![Zipzilla banner](./images/zipzilla_video_format.png)
+![Zipzilla banner](./images/zipzilla_android_linux.png)
+![Zipzilla banner](./images/zipzilla_video_convert_format.png)
 
 ## ✨ Features
 
 - **Universal File Handling**
+
   - Compress and extract files, folders, images, and videos
   - Support for multiple archive formats (zip, tar, gzip, bzip2, xz)
   - Automated package manager detection and dependency installation
   - Cross-platform support (Linux, macOS, Windows via WSL)
 
 - **Video Processing Capabilities**
+
   - Convert between popular video formats (mp4, mkv, mpeg, webm, avi, flv, mov)
   - Extract audio from video files
   - Create video clips with custom duration
@@ -31,17 +39,20 @@ A blazing-fast, cross-platform compression and extraction tool built entirely in
 ## 🚀 Quick Start
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/mahajang214/zipzilla.git
 cd zipzilla
 ```
 
 2. Make the script executable:
+
 ```bash
 chmod +x zipzilla
 ```
 
 3. Run Zipzilla:
+
 ```bash
 ./zipzilla file1 file2 ...
 ```
@@ -67,25 +78,30 @@ chmod +x zipzilla
 ### Menu Options
 
 1. **Files extraction/compression**
+
    - Support for gzip, bzip2, zip formats
    - Automatic compression/extraction detection
 
 2. **Folders extraction/compression**
+
    - ZIP archive creation
    - TAR + GZIP/BZIP2/XZ compression
    - Various extraction options
 
 3. **Images extraction/compression**
+
    - Supports jpg, jpeg, png, and webp
    - Multiple compression methods
 
 4. **Videos extraction/compression**
+
    - Supports mp4, mkv, mpeg formats
    - Audio extraction
    - Clip creation
    - Custom quality compression
 
 5. **Linux/Android applications**
+
    - DEB package handling
    - RPM package processing
    - APK file management
@@ -109,6 +125,7 @@ Zipzilla automatically handles dependencies through your system's package manage
 ## 🎨 Color Coding
 
 The interface uses color coding for better visibility:
+
 - 🟢 Green: Success messages
 - 🔴 Red: Error messages and warnings
 - 🟡 Yellow: Important notes and prompts
